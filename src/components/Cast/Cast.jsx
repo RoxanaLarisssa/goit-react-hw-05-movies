@@ -1,58 +1,55 @@
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getCast } from '../Service/api';
-import { Ul } from './Cast.styled';
+import { useEffect, useState } from 'react';
+import { fetchActors } from 'service/TmbdApi';
+import Loader from 'components/Loader/Loader';
+import styles from './Cast.module.css';
 
 const Cast = () => {
   const { movieId } = useParams();
-  const [cast, setCast] = useState([]);
-  const defaultImg =
-    'https://ireland.apollo.olxcdn.com/v1/files/0iq0gb9ppip8-UA/image;s=1000x700';
+  const [actors, setActors] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!movieId) return;
-    const getCastMovie = async () => {
-      try {
-        const resultMovie = await getCast(movieId);
-        if (resultMovie.cast === 0) {
-          alert('No cast information available');
-          return;
-        }
-        setCast(resultMovie.cast);
-      } catch (error) {
-        alert(error.message);
-      }
+    const onActorsOfMovie = () => {
+      setLoading(true);
+
+      fetchActors(movieId)
+        .then(actors => {
+          setActors(actors);
+        })
+        .catch(error => {
+          console.log(error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     };
 
-    if (movieId) {
-      getCastMovie();
-    }
+    onActorsOfMovie();
   }, [movieId]);
 
-  const toggleImg = origImg => {
-    const imageUrl = origImg
-      ? `https://image.tmdb.org/t/p/w500${origImg}`
-      : defaultImg;
-    return imageUrl;
-  };
-
   return (
-    <>
-      {cast.length >= 0 ? (
-        <Ul>
-          {cast.map(({ original_name, character, profile_path, id }) => (
-            <li key={id}>
-              <img src={toggleImg(profile_path)} alt={original_name} />
-              <h1>{original_name}</h1>
-              <h2>{character}</h2>
-            </li>
-          ))}
-        </Ul>
-      ) : (
-        <p>No cast information available.</p>
-      )}
-    </>
+    <div className={styles.castContainer}>
+      {loading && <Loader />}
+
+      <ul className={styles.castUl}>
+        {actors.map(({ id, profile_path, original_name, name, character }) => (
+          <li className={styles.castCard} key={id}>
+            <img
+              width="200px"
+              src={
+                profile_path
+                  ? `https://image.tmdb.org/t/p/w500${profile_path}`
+                  : `https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg`
+              }
+              alt={original_name}
+            />
+            <span className={styles.text}>{name}</span>
+            <span className={styles.text}>Character: {character}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 };
-
 export default Cast;

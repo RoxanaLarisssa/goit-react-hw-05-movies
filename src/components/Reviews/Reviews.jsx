@@ -1,44 +1,52 @@
-import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchReviews } from '../Service/api';
-import { Title } from './Reviews.styled';
+import { useEffect, useState } from 'react';
+import { fetchReviews } from 'service/TmbdApi';
+import Loader from 'components/Loader/Loader';
+import styles from './Reviews.module.css';
 
 const Reviews = () => {
-  const [reviewsData, setReviewsData] = useState(null);
   const { movieId } = useParams();
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!movieId) return;
-    const fetchReviewsData = async () => {
-      try {
-        const reviewsInfo = await fetchReviews(movieId);
-        if (reviewsInfo.results.length === 0) {
-          alert('Review for this movie undefined');
-          return;
-        }
-        setReviewsData(reviewsInfo.results);
-      } catch (error) {
-        console.error('Error fetching reviews:', error);
-      }
+    const fetchReviewsFilms = () => {
+      setLoading(true);
+
+      fetchReviews(movieId)
+        .then(reviews => {
+          setReviews(reviews);
+        })
+        .catch(error => {
+          console.log(error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     };
-    fetchReviewsData();
+
+    fetchReviewsFilms();
   }, [movieId]);
 
   return (
-    <div>
-      {reviewsData && reviewsData.length > 0 ? (
-        <ul>
-          {reviewsData.map(({ id, author, content }) => (
-            <li key={id}>
-              <Title>Author: {author}</Title>
-              <p>{content}</p>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p style={{ color: 'red' }}>Reviews are undefined</p>
+    <>
+      {loading && <Loader />}
+      {reviews.length !== 0 && (
+        <div>
+          <ul className={styles.reviewUl}>
+            {reviews.map(review => (
+              <li key={review.id}>
+                <h2>Author: {review.author}</h2>
+                <p>{review.content}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
-    </div>
+      {reviews.length === 0 && (
+        <div>We don't have any reviews for this movie</div>
+      )}
+    </>
   );
 };
 

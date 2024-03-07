@@ -1,0 +1,29 @@
+.containerLayout {
+    margin: 0 auto;
+  }
+  
+  .layoutHeader {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    width: 100%;
+    background-color: rgb(255, 0, 191);
+  }
+  
+  .layoutHeader a {
+    display: inline-block;
+    text-decoration: none;
+    padding: 14px;
+    margin-left: 10px;
+    font-weight: 600;
+    font-size: 22px;
+    color: #1e191e;
+  }
+  
+  .layoutHeader a:hover {
+    color: rgba(11, 239, 232, 0.926);
+  }
+  
+  .layoutHeader .active {
+    color: rgba(11, 239, 232, 0.926);
+  }
